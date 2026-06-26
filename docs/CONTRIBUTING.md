@@ -102,12 +102,11 @@ This generates a file like `supabase/migrations/20260625120000_add_hackathon_int
 
 ```bash
 # 1. Make schema changes directly on your personal DB
-supabase db execute -f - <<'SQL'
-  ALTER TABLE profiles ADD COLUMN new_col text;
-SQL
+#    (requires Supabase CLI v2.79.0+ — use Supabase dashboard SQL editor as fallback)
+supabase db query --linked "ALTER TABLE profiles ADD COLUMN new_col text;"
 
 # 2. Iterate until happy, then generate a clean migration
-supabase db pull --local --yes <migration_name>
+supabase db pull <migration_name>
 
 # 3. Verify
 supabase migration list --local
@@ -133,7 +132,7 @@ Before opening a PR to `develop`:
 - [ ] `pnpm typecheck` passes locally
 - [ ] `pnpm lint` passes locally
 - [ ] API contract written/updated in `docs/api-contracts.md` (backend changes)
-- [ ] TypeScript types regenerated (`npx supabase gen types typescript --linked > packages/shared/src/database.types.ts`)
+- [ ] TypeScript types regenerated (`supabase gen types --lang=typescript --linked > packages/shared/src/database.types.ts`)
 - [ ] Migration files created with `supabase migration new` (not manually)
 - [ ] `supabase db lint` passes (if touching migrations)
 - [ ] RLS verified for all new/modified tables
