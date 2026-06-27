@@ -65,6 +65,103 @@ Work through this checklist *before* you click "Create Pull Request". CI will ca
 
 ---
 
+## Tests
+
+> [!NOTE]
+> No test infrastructure exists yet. The **first person to add business logic** (P1 for auth/profile, P2 for swipe/credits) should set up Vitest first. Setup instructions are below.
+
+### What we use
+
+| Layer | Tool | When |
+|---|---|---|
+| Unit — pure functions, utils, credit calc | **Vitest** + `@testing-library/react` | Required for any non-trivial logic |
+| Component — UI behaviour, form validation | **Vitest** + `@testing-library/react` | Required for shared components |
+| Edge Functions — Deno runtime | **Deno's built-in test runner** (`Deno.test`) | Required when P2/P3 write Edge Functions |
+| E2E — full browser flows | **Playwright** | Optional for V1 — add if time permits |
+
+### What needs a test (required)
+
+Write at least one test for:
+- Any **pure utility function** (credit calc, slug generation, score formula, date helpers)
+- Any **shared component** in `apps/web/src/app/components/` that has conditional rendering logic
+- Any **RPC or Edge Function** business logic that can be unit-tested without a live DB
+
+### What does NOT need a test (skip these)
+
+- Page files that are mostly layout (`page.tsx` wrappers, pure presentational components)
+- Supabase client boilerplate — that's tested upstream
+- One-off scripts or seed files
+
+### Setting up Vitest (do this once — whoever is first)
+
+```bash
+# From the repo root
+pnpm add -D vitest @vitejs/plugin-react @testing-library/react @testing-library/user-event jsdom --filter @pairup/web
+```
+
+Add to `apps/web/package.json` scripts:
+```json
+"test": "vitest run",
+"test:watch": "vitest"
+```
+
+Create `apps/web/vitest.config.ts`:
+```ts
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+  },
+});
+```
+
+Once done, also add to the **root** `package.json` scripts:
+```json
+"test": "pnpm --filter @pairup/web test"
+```
+
+### Where test files live
+
+```
+apps/web/src/
+  app/
+    components/
+      CreditDisplay/
+        CreditDisplay.tsx
+        CreditDisplay.test.tsx   ← co-located with the component
+  lib/
+    credits.ts
+    credits.test.ts              ← co-located with the util
+```
+
+### PR checklist item for tests
+
+Add this to your pre-PR check if your branch adds logic:
+
+- [ ] New business logic or shared components have at least one Vitest test
+- [ ] `pnpm test` passes with no failures
+
+### Edge Function tests (Deno)
+
+Each Edge Function folder can have a `*.test.ts` alongside it:
+
+```
+supabase/functions/swipe/
+  index.ts
+  index.test.ts    ← uses Deno.test(), no extra setup needed
+```
+
+Run with:
+```bash
+deno test supabase/functions/swipe/index.test.ts
+```
+
+---
+
 ## Common Mistakes to Avoid
 
 ### Git
