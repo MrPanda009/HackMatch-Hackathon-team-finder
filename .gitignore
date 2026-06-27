@@ -39,3 +39,6 @@ supabase/.temp/
 
 # Temporary / one-off scripts
 fix_*.sh
+#p1 files
+docs/P1_PROJECT_CONTEXT.md
+supabase/.branches/

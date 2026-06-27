@@ -73,6 +73,34 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         # This lints the SQL in migration files for common issues (missing RLS,
-        # security definer in public schema, etc.)
+        # security definer in public schema, etc.
         # Add SUPABASE_ACCESS_TOKEN to GitHub repo secrets to enable this step.
         continue-on-error: true
+
+  # ─── Unit Tests ───────────────────────────────────────────────────────────
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    # TODO: remove continue-on-error once Vitest is set up (see docs/PULL_REQUEST_RULES.md)
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        run: pnpm test
+
